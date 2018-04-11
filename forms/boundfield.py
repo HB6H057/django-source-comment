@@ -159,17 +159,26 @@ class BoundField(object):
         Wraps the given contents in a <label>, if the field has an ID attribute.
         contents should be 'mark_safe'd to avoid HTML escaping. If contents
         aren't given, uses the field's HTML-escaped label.
+        封装 contents 到 <babel> 标签里，如果字段有 ID 属性。
+        contents 应该通过 'mark_safe' 去禁止 HTML 转义。
+        如果不指定 contents，则默认使用转义后的字段 label。
 
         If attrs are given, they're used as HTML attributes on the <label> tag.
+        指定 attrs，会使用使用再 label 标签上。
 
         label_suffix allows overriding the form's label_suffix.
+        label_suffix 允许重写 form 的 label_suffix。
         """
         contents = contents or self.label
+        # 如果未指定 label_suffix，则使用 fields 的 label_suffix。
+        # 如果 fields 指定 label_suffix，则使用 form 的 label_suffix。
         if label_suffix is None:
             label_suffix = (self.field.label_suffix if self.field.label_suffix is not None
                             else self.form.label_suffix)
         # Only add the suffix if the label does not end in punctuation.
+        # 只要在 label 结尾没有标点符号的时才添加后缀。
         # Translators: If found as last label character, these punctuation
+        # 翻译器：如果在 label 末尾找到这些标点符号，则不会添加 label_suffix 到 label 末尾。
         # characters will prevent the default label_suffix to be appended to the label
         if label_suffix and contents and contents[-1] not in _(':?.!'):
             contents = format_html('{}{}', contents, label_suffix)
@@ -178,13 +187,16 @@ class BoundField(object):
         if id_:
             id_for_label = widget.id_for_label(id_)
             if id_for_label:
+                # 添加 {'for': id_for_label} 到 attrs（id_for_label 一般都是 'id_' + field_name）
                 attrs = dict(attrs or {}, **{'for': id_for_label})
             if self.field.required and hasattr(self.form, 'required_css_class'):
+                # 添加 required 样式到 attrs
                 attrs = attrs or {}
                 if 'class' in attrs:
                     attrs['class'] += ' ' + self.form.required_css_class
                 else:
                     attrs['class'] = self.form.required_css_class
+            # 转换 attrs 为 html key-value 形式
             attrs = flatatt(attrs) if attrs else ''
             contents = format_html('<label{}>{}</label>', attrs, contents)
         else:
@@ -214,6 +226,7 @@ class BoundField(object):
         """
         Calculates and returns the ID attribute for this BoundField, if the
         associated Form has specified auto_id. Returns an empty string otherwise.
+        如果 Form 有指定的 auto_id，返回 BoundField 的 ID 属性。否则返回空。
         """
         auto_id = self.form.auto_id
         if auto_id and '%s' in force_text(auto_id):
